@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/furniture_provider.dart';
-import '../providers/room_provider.dart';
+import '../providers/property_provider.dart';
 import '../providers/vr_provider.dart';
 import '../models/furniture.dart';
-import '../models/room.dart';
+import '../models/property.dart';
 import '../widgets/custom_appbar.dart';
 import '../widgets/furniture_card.dart';
 import '../utils/theme.dart';
 
-/// The Home Screen of ImmoSpace containing the main furniture catalog and navigation hub.
+/// The Home Screen of ImmoSpace containing the main property visits and furniture catalog.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -18,12 +18,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
   String _activeCategoryString = 'Tous';
 
   @override
   Widget build(BuildContext context) {
     final furnitureProvider = Provider.of<FurnitureProvider>(context);
-    final roomProvider = Provider.of<RoomProvider>(context);
+    final propertyProvider = Provider.of<PropertyProvider>(context);
     final vrProvider = Provider.of<VRProvider>(context, listen: false);
     final filteredFurniture = furnitureProvider.getFurnitureByCategory(_activeCategoryString);
 
@@ -32,230 +33,331 @@ class _HomeScreenState extends State<HomeScreen> {
         title: 'ImmoSpace',
         showBackButton: false,
       ),
-      body: CustomScrollView(
-        slivers: [
-          // 1. Navigation & Banner Header
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.primaryDark, AppTheme.secondaryDark.withValues(alpha: 0.9)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: AppTheme.accentGold.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.4)),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.auto_awesome, color: AppTheme.accentGold, size: 14),
-                            SizedBox(width: 4),
-                            Text(
-                              'Premium Property Visiter',
-                              style: TextStyle(
-                                color: AppTheme.accentGold,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Découvrez votre futur intérieur',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Explorez des appartements en VR 360° et intégrez des meubles en réalité augmentée.',
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 13,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // 2. VR Rooms Section
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: Row(
-                children: [
-                  const Icon(Icons.vrpano_rounded, color: AppTheme.primaryBrand, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Visites Virtuelles 360°',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 180,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                scrollDirection: Axis.horizontal,
-                itemCount: roomProvider.roomList.length,
-                itemBuilder: (context, index) {
-                  final room = roomProvider.roomList[index];
-                  return RoomCard(
-                    room: room,
-                    onTap: () {
-                      roomProvider.selectRoom(room);
-                      vrProvider.selectRoom(room);
-                      Navigator.pushNamed(context, '/vr');
-                    },
-                  );
-                },
-              ),
-            ),
-          ),
-
-          // 3. Category Selector Section
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.shopping_bag_rounded, color: AppTheme.accentCyan, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Catalogue de Mobilier 3D',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
-                            ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 44,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: ['Tous', 'Chair', 'Table', 'Lamp'].map((catName) {
-                        final isSelected = _activeCategoryString.toLowerCase() == catName.toLowerCase();
-                        String displayLabel = catName;
-                        if (catName == 'Chair') displayLabel = 'Sièges';
-                        if (catName == 'Table') displayLabel = 'Tables';
-                        if (catName == 'Lamp') displayLabel = 'Luminaires';
-
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8.0, top: 4, bottom: 4),
-                          child: ChoiceChip(
-                            label: Text(displayLabel),
-                            selected: isSelected,
-                            onSelected: (val) {
-                              if (val) {
-                                setState(() {
-                                  _activeCategoryString = catName;
-                                });
-                              }
-                            },
-                            selectedColor: AppTheme.primaryBrand,
-                            backgroundColor: AppTheme.secondaryDark,
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : AppTheme.textPrimary,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              fontSize: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(
-                                color: isSelected ? AppTheme.primaryBrand : Colors.white12,
-                                width: 1,
-                              ),
-                            ),
-                            elevation: isSelected ? 4 : 0,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // 4. Furniture Grid View
-          filteredFurniture.isEmpty
-              ? const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 60),
-                    child: Center(
-                      child: Text(
-                        'Aucun meuble dans cette catégorie.',
-                        style: TextStyle(color: AppTheme.textSecondary),
-                      ),
-                    ),
-                  ),
-                )
-              : SliverPadding(
-                  padding: const EdgeInsets.all(20),
-                  sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.64,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final item = filteredFurniture[index];
-                        return FurnitureCard(
-                          furniture: item,
-                          onTap: () {
-                            furnitureProvider.selectFurniture(item);
-                            Navigator.pushNamed(context, '/ar', arguments: item);
-                          },
-                        );
-                      },
-                      childCount: filteredFurniture.length,
-                    ),
-                  ),
-                ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          _buildPropertiesTab(propertyProvider, vrProvider),
+          _buildFurnitureTab(furnitureProvider, filteredFurniture),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddFurnitureDialog(context, furnitureProvider),
-        backgroundColor: AppTheme.accentBrand,
-        foregroundColor: Colors.white,
-        tooltip: 'Ajouter un meuble',
-        child: const Icon(Icons.add),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          border: Border(
+            top: BorderSide(color: Colors.white10, width: 1),
+          ),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          backgroundColor: AppTheme.primaryDark,
+          selectedItemColor: AppTheme.accentGold,
+          unselectedItemColor: Colors.white60,
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          unselectedLabelStyle: const TextStyle(fontSize: 11),
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_work_rounded),
+              label: 'Propriétés',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chair_rounded),
+              label: 'Mobilier AR',
+            ),
+          ],
+        ),
       ),
+      floatingActionButton: _currentIndex == 1
+          ? FloatingActionButton(
+              onPressed: () => _showAddFurnitureDialog(context, furnitureProvider),
+              backgroundColor: AppTheme.accentBrand,
+              foregroundColor: Colors.white,
+              tooltip: 'Ajouter un meuble',
+              child: const Icon(Icons.add),
+            )
+          : null,
+    );
+  }
+
+  /// Properties Tab Layout stacked vertically
+  Widget _buildPropertiesTab(PropertyProvider propertyProvider, VRProvider vrProvider) {
+    return CustomScrollView(
+      slivers: [
+        // 1. Navigation & Banner Header
+        SliverToBoxAdapter(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppTheme.primaryDark, AppTheme.secondaryDark.withValues(alpha: 0.9)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentGold.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.4)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.auto_awesome, color: AppTheme.accentGold, size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            'Premium Property Visiter',
+                            style: TextStyle(
+                              color: AppTheme.accentGold,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Découvrez votre futur intérieur',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Explorez des appartements en VR 360° et intégrez des meubles en réalité augmentée.',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // 2. Select Property Section
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Row(
+              children: [
+                const Icon(Icons.location_on, color: AppTheme.primaryBrand, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Select Property',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // 3. Vertical Stack of Property Cards
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final property = propertyProvider.propertyList[index];
+                return PropertyCard(
+                  property: property,
+                  onTap: () {
+                    propertyProvider.selectProperty(property);
+                    vrProvider.selectProperty(property);
+                    Navigator.pushNamed(context, '/vr');
+                  },
+                );
+              },
+              childCount: propertyProvider.propertyList.length,
+            ),
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 32)),
+      ],
+    );
+  }
+
+  /// AR Furniture Catalog Tab Layout
+  Widget _buildFurnitureTab(FurnitureProvider furnitureProvider, List<Furniture> filteredFurniture) {
+    return CustomScrollView(
+      slivers: [
+        // 1. Premium Header Banner
+        SliverToBoxAdapter(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppTheme.primaryDark, AppTheme.secondaryDark.withValues(alpha: 0.9)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentCyan.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.4)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.view_in_ar_rounded, color: AppTheme.accentCyan, size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            'Catalogue de Mobilier AR',
+                            style: TextStyle(
+                              color: AppTheme.accentCyan,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Catalogue de Mobilier 3D',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Visualisez et placez des modèles 3D réalistes chez vous ou dans nos appartements virtuels.',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // 2. Category Chips Section
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 44,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: ['Tous', 'Chair', 'Table', 'Lamp'].map((catName) {
+                      final isSelected = _activeCategoryString.toLowerCase() == catName.toLowerCase();
+                      String displayLabel = catName;
+                      if (catName == 'Chair') displayLabel = 'Sièges';
+                      if (catName == 'Table') displayLabel = 'Tables';
+                      if (catName == 'Lamp') displayLabel = 'Luminaires';
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0, top: 4, bottom: 4),
+                        child: ChoiceChip(
+                          label: Text(displayLabel),
+                          selected: isSelected,
+                          onSelected: (val) {
+                            if (val) {
+                              setState(() {
+                                _activeCategoryString = catName;
+                              });
+                            }
+                          },
+                          selectedColor: AppTheme.primaryBrand,
+                          backgroundColor: AppTheme.secondaryDark,
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : AppTheme.textPrimary,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: isSelected ? AppTheme.primaryBrand : Colors.white12,
+                              width: 1,
+                            ),
+                          ),
+                          elevation: isSelected ? 4 : 0,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // 3. Furniture Grid View
+        filteredFurniture.isEmpty
+            ? const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 60),
+                  child: Center(
+                    child: Text(
+                      'Aucun meuble dans cette catégorie.',
+                      style: TextStyle(color: AppTheme.textSecondary),
+                    ),
+                  ),
+                ),
+              )
+            : SliverPadding(
+                padding: const EdgeInsets.all(20),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.64,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final item = filteredFurniture[index];
+                      return FurnitureCard(
+                        furniture: item,
+                        onTap: () {
+                          furnitureProvider.selectFurniture(item);
+                          Navigator.pushNamed(context, '/ar', arguments: item);
+                        },
+                      );
+                    },
+                    childCount: filteredFurniture.length,
+                  ),
+                ),
+              ),
+      ],
     );
   }
 
@@ -378,29 +480,31 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// A premium Room card displaying equirectangular panorama preview
-class RoomCard extends StatelessWidget {
-  final Room room;
+/// A premium Property card displaying wide layout and spec overlays.
+class PropertyCard extends StatelessWidget {
+  final Property property;
   final VoidCallback onTap;
 
-  const RoomCard({
+  const PropertyCard({
     super.key,
-    required this.room,
+    required this.property,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 250,
-      margin: const EdgeInsets.only(right: 16, bottom: 4),
+      height: 140,
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
+        color: AppTheme.secondaryDark,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -408,79 +512,139 @@ class RoomCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onTap,
-          child: Stack(
+          child: Row(
             children: [
-              // Panorama image background
-              Positioned.fill(
+              // Cover Image (Left Side)
+              SizedBox(
+                width: 130,
+                height: 140,
                 child: Image.asset(
-                  room.panoramaAsset,
+                  property.coverAsset,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: AppTheme.secondaryDark,
+                      color: Colors.white12,
                       child: const Center(
-                        child: Icon(Icons.broken_image, color: Colors.white24, size: 48),
+                        child: Icon(Icons.broken_image, color: Colors.white24, size: 36),
                       ),
                     );
                   },
                 ),
               ),
-              // Dark subtle gradient overlay
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withValues(alpha: 0.1),
-                        Colors.black.withValues(alpha: 0.8),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                ),
-              ),
-              // Content overlay
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      room.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryBrand.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
+              
+              // Property Specifications & Details (Right Side)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.explore_outlined, color: Colors.white, size: 12),
-                          SizedBox(width: 4),
+                          // Title / Name
                           Text(
-                            'Visiter en VR',
-                            style: TextStyle(
+                            property.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 10,
                               fontWeight: FontWeight.bold,
+                              fontSize: 15,
                             ),
+                          ),
+                          const SizedBox(height: 4),
+                          
+                          // Location (GPS Icon)
+                          Row(
+                            children: [
+                              const Icon(Icons.location_pin, color: AppTheme.accentGold, size: 13),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  property.location,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          
+                          // Bed/Price details (like "3 bedrooms • $4k")
+                          Row(
+                            children: [
+                              const Icon(Icons.king_bed_outlined, color: AppTheme.accentCyan, size: 14),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${property.bedrooms} ${property.bedrooms > 1 ? "chambres" : "chambre"}',
+                                style: const TextStyle(
+                                  color: AppTheme.textPrimary,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                '•',
+                                style: TextStyle(color: Colors.white24),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.attach_money_rounded, color: Colors.greenAccent, size: 14),
+                              Text(
+                                property.priceString,
+                                style: const TextStyle(
+                                  color: Colors.greenAccent,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      
+                      // Visit VR Button
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryBrand,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primaryBrand.withOpacity(0.3),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.vrpano_rounded, color: Colors.white, size: 13),
+                              SizedBox(width: 4),
+                              Text(
+                                'VISIT VR',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:panorama/panorama.dart';
 
-import '../models/room.dart';
+import '../models/property.dart';
 import '../providers/vr_provider.dart';
 import '../utils/theme.dart';
 
@@ -23,9 +23,10 @@ class _VRScreenState extends State<VRScreen> {
   @override
   Widget build(BuildContext context) {
     final vrProvider = Provider.of<VRProvider>(context);
-    final room = vrProvider.currentRoom;
+    final Property? property = vrProvider.currentProperty;
+    final RoomPano? currentRoomPano = vrProvider.currentRoomPano;
 
-    if (room == null) {
+    if (property == null || currentRoomPano == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Visite VR 360°')),
         body: Center(
@@ -35,7 +36,7 @@ class _VRScreenState extends State<VRScreen> {
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 16),
               const Text(
-                'Aucune pièce sélectionnée.',
+                'Aucune propriété ou pièce sélectionnée.',
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               const SizedBox(height: 16),
@@ -57,10 +58,10 @@ class _VRScreenState extends State<VRScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
-          room.name,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+          '${property.name} - ${currentRoomPano.name}',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
         ),
-        backgroundColor: Colors.black.withValues(alpha: 0.3),
+        backgroundColor: Colors.black.withOpacity(0.3),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
@@ -84,7 +85,7 @@ class _VRScreenState extends State<VRScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: Colors.white.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.white24),
                     ),
@@ -116,7 +117,7 @@ class _VRScreenState extends State<VRScreen> {
           Panorama(
             sensorControl: _sensorControl,
             interactive: true,
-            child: Image.asset(room.panoramaAsset),
+            child: Image.asset(currentRoomPano.panoramaAsset),
           ),
 
           // Instructions overlay with BackdropFilter blur
@@ -132,10 +133,10 @@ class _VRScreenState extends State<VRScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.45),
+                      color: Colors.black.withOpacity(0.45),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.15),
+                        color: Colors.white.withOpacity(0.15),
                       ),
                     ),
                     child: Row(
@@ -172,41 +173,26 @@ class _VRScreenState extends State<VRScreen> {
         ],
       ),
 
-      // Bottom navigation bar for room switching
+      // Bottom navigation bar for room switching within the selected property
       bottomNavigationBar: Container(
-        color: AppTheme.primaryDark.withValues(alpha: 0.95),
+        color: AppTheme.primaryDark.withOpacity(0.95),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         child: SafeArea(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildNavButton(
-                label: 'Room 1',
-                active: room.id == 'room_white',
-                onPressed: () {
-                  if (Room.availableRooms.isNotEmpty) {
-                    vrProvider.selectRoom(Room.availableRooms[0]);
-                  }
-                },
-              ),
-              _buildNavButton(
-                label: 'Room 2',
-                active: room.id == 'room_modern',
-                onPressed: () {
-                  if (Room.availableRooms.length > 1) {
-                    vrProvider.selectRoom(Room.availableRooms[1]);
-                  }
-                },
-              ),
-              _buildNavButton(
-                label: 'Room 3',
-                active: room.id == 'room_vacation',
-                onPressed: () {
-                  if (Room.availableRooms.length > 2) {
-                    vrProvider.selectRoom(Room.availableRooms[2]);
-                  }
-                },
-              ),
+              // Dynamic room switching buttons
+              ...property.rooms.map((roomPano) {
+                final isCurrent = currentRoomPano.name == roomPano.name;
+                return _buildNavButton(
+                  label: roomPano.name,
+                  active: isCurrent,
+                  onPressed: () {
+                    vrProvider.selectRoomPano(roomPano);
+                  },
+                );
+              }),
+              
               TextButton.icon(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.home_rounded, color: Colors.white70, size: 16),

@@ -1,5 +1,5 @@
 import '../models/furniture.dart';
-import '../models/room.dart';
+import '../models/property.dart';
 
 /// Class containing app-wide constants, styling constraints, and mock data.
 class AppConstants {
@@ -68,31 +68,58 @@ class AppConstants {
     ),
   ];
 
-  // Mock Rooms Data using local equirectangular apartment images
-  static final List<Room> mockRooms = [
-    Room(
-      id: 'r1',
-      name: 'Salon Principal',
-      panoramaAsset: 'assets/images/AppartementWhite.jpg',
+  // Mock Properties Data with multiple rooms per property
+  static final List<Property> mockProperties = [
+    Property(
+      id: 'p1',
+      name: 'Modern White Apartment',
+      coverAsset: 'assets/images/Cover/AppartementWhite_Cover.jpeg',
+      priceString: '\$4k',
+      bedrooms: 3,
+      location: 'Paris, France',
+      rooms: [
+        const RoomPano(name: 'Salon', panoramaAsset: 'assets/images/AppartementWhite/AppartementWhite_Salon.jpeg'),
+        const RoomPano(name: 'Chambre', panoramaAsset: 'assets/images/AppartementWhite/AppartementWhite_Chambre.jpeg'),
+        const RoomPano(name: 'Cuisine', panoramaAsset: 'assets/images/AppartementWhite/AppartementWhite_Cuisine.jpeg'),
+        const RoomPano(name: 'Douche', panoramaAsset: 'assets/images/AppartementWhite/AppartementWhite_Douche.jpeg'),
+      ],
       furniture: [
         mockFurniture[0],
         mockFurniture[2],
         mockFurniture[3],
       ],
     ),
-    Room(
-      id: 'r2',
-      name: 'Chambre d\'Amis',
-      panoramaAsset: 'assets/images/AppartementModerne.jpg',
+    Property(
+      id: 'p2',
+      name: 'Modern Living Room',
+      coverAsset: 'assets/images/Cover/AppartementModerne_Cover.jpeg',
+      priceString: '\$320k',
+      bedrooms: 2,
+      location: 'New York, USA',
+      rooms: [
+        const RoomPano(name: 'Salon', panoramaAsset: 'assets/images/AppartementModerne/AppartementModerne_Salon.jpg'),
+        const RoomPano(name: 'Chambre', panoramaAsset: 'assets/images/AppartementModerne/AppartementModerne_Chambre.jpeg'),
+        const RoomPano(name: 'Cuisine', panoramaAsset: 'assets/images/AppartementModerne/AppartementModerne_Cuisine.jpeg'),
+        const RoomPano(name: 'Douche', panoramaAsset: 'assets/images/AppartementModerne/AppartementModerne_Douche.jpeg'),
+      ],
       furniture: [
         mockFurniture[1],
         mockFurniture[2],
       ],
     ),
-    Room(
-      id: 'r3',
-      name: 'Chambre Nature',
-      panoramaAsset: 'assets/images/AppartementVacance.jpg',
+    Property(
+      id: 'p3',
+      name: 'Vacation Bedroom',
+      coverAsset: 'assets/images/Cover/AppartementVacance_Cover.jpeg',
+      priceString: '\$180k',
+      bedrooms: 1,
+      location: 'Bali, Indonesia',
+      rooms: [
+        const RoomPano(name: 'Chambre', panoramaAsset: 'assets/images/AppartementVacance/AppartementVacance_Chambre.jpeg'),
+        const RoomPano(name: 'Salon', panoramaAsset: 'assets/images/AppartementVacance/AppartementVacance_Salon.jpeg'),
+        const RoomPano(name: 'Cuisine', panoramaAsset: 'assets/images/AppartementVacance/AppartementVacance_Cuisine.jpeg'),
+        const RoomPano(name: 'Douche', panoramaAsset: 'assets/images/AppartementVacance/AppartementVacance_Douche.jpeg'),
+      ],
       furniture: [
         mockFurniture[1],
         mockFurniture[4],

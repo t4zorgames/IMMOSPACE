@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 // Providers
 import 'providers/furniture_provider.dart';
-import 'providers/room_provider.dart';
+import 'providers/property_provider.dart';
 import 'providers/ar_provider.dart';
 import 'providers/vr_provider.dart';
 
@@ -23,7 +23,7 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => RoomProvider()),
+        ChangeNotifierProvider(create: (_) => PropertyProvider()),
         ChangeNotifierProvider(create: (_) => FurnitureProvider()),
         ChangeNotifierProvider(create: (_) => ARProvider()),
         ChangeNotifierProvider(create: (_) => VRProvider()),

@@ -80,15 +80,11 @@ flutter:
 
   # Register apartment 360 panorama assets
   assets:
-    - assets/images/AppartementWhite.jpg
-    - assets/images/AppartementModerne.jpg
-    - assets/images/AppartementVacance.jpg
-    - assets/models/antique_wooden_desk.glb
-    - assets/models/black_leather_chair.glb
-    - assets/models/desk.glb
-    - assets/models/kungshult_3-seater_sofa.glb
-    - assets/models/metal_and_glass_coffee_table.glb
-    - assets/models/mordern_lamp___jpgstlglb_formats_available.glb
+    - assets/images/AppartementWhite/
+    - assets/images/AppartementModerne/
+    - assets/images/AppartementVacance/
+    - assets/images/Cover/
+    - assets/models/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
