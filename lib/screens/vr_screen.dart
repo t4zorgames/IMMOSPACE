@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:panorama/panorama.dart';
@@ -31,6 +32,8 @@ class _VRScreenState extends State<VRScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 16),
               const Text(
                 'Aucune pièce sélectionnée.',
                 style: TextStyle(color: Colors.white, fontSize: 16),
@@ -55,9 +58,9 @@ class _VRScreenState extends State<VRScreen> {
       appBar: AppBar(
         title: Text(
           room.name,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
         ),
-        backgroundColor: Colors.black.withValues(alpha: 0.4),
+        backgroundColor: Colors.black.withValues(alpha: 0.3),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
@@ -74,27 +77,33 @@ class _VRScreenState extends State<VRScreen> {
                       : SensorControl.Orientation;
                 });
               },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryBrand.withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      modeLabel,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: BackdropFilter(
+                  filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white24),
                     ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.sync, color: Colors.white, size: 14),
-                  ],
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          modeLabel,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.sync_rounded, color: Colors.white70, size: 14),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -110,27 +119,51 @@ class _VRScreenState extends State<VRScreen> {
             child: Image.asset(room.panoramaAsset),
           ),
 
-          // Instructions overlay
+          // Instructions overlay with BackdropFilter blur
           Positioned(
-            top: kToolbarHeight + 50,
-            left: 20,
-            right: 20,
+            top: kToolbarHeight + 60,
+            left: 28,
+            right: 28,
             child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  _sensorControl == SensorControl.Orientation
-                      ? '📱 Bougez votre téléphone • Glissez pour contrôler'
-                      : '👆 Glissez votre doigt pour regarder autour',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: BackdropFilter(
+                  filter: ui.ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.15),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _sensorControl == SensorControl.Orientation
+                              ? Icons.screen_rotation_rounded
+                              : Icons.touch_app_rounded,
+                          color: AppTheme.accentGold,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            _sensorControl == SensorControl.Orientation
+                                ? 'Bougez votre téléphone ou glissez pour naviguer'
+                                : 'Glissez votre doigt pour regarder autour',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -176,10 +209,10 @@ class _VRScreenState extends State<VRScreen> {
               ),
               TextButton.icon(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.home, color: Colors.white, size: 16),
+                icon: const Icon(Icons.home_rounded, color: Colors.white70, size: 16),
                 label: const Text(
                   'Home',
-                  style: TextStyle(color: Colors.white, fontSize: 11),
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
                 ),
               ),
             ],
@@ -201,10 +234,11 @@ class _VRScreenState extends State<VRScreen> {
             active ? AppTheme.accentBrand : AppTheme.secondaryDark,
         foregroundColor: Colors.white,
         padding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
+        elevation: active ? 4 : 0,
       ),
       child: Text(
         label,
